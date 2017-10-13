@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--플레이어 데이터-->
+    <integer name="playerHealth">10</integer>
+    <integer name="laserShotSpd">3</integer>
+    <integer name="laserShotDmg">1</integer>
+    <integer name="shotgunShotSpd">1</integer>
+    <integer name="shotgunShotDmg">1</integer>
+    <integer name="rocketShotSpd">1</integer>
+    <integer name="rocketShotDmg">5</integer>
+
+    <!-- 적 데이터 -->
+
+</resources>
