@@ -17,7 +17,6 @@ public class Bullet implements GameObject{
 
     public Bullet(Rect rect, Context context) {
         this.rect = rect;
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.)
     }
 
 
