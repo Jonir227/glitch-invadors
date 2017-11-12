@@ -1,5 +1,8 @@
 package com.example.bjbj6.glitchinvadors;
 
+
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,10 +12,11 @@ import android.widget.ImageView;
 
 public class Stage extends Activity {
 
+
     final int LASER_GUN = 1;
     final int SHOT_GUN = 2;
     final int ROCKET_GUN = 3;
-    int weaponNo = 1;
+
     ImageView controller;
     StageView stageView;
     ImageView laserBtn;
@@ -22,6 +26,7 @@ public class Stage extends Activity {
 
     float[] moveValue = new float[2];
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,8 +41,10 @@ public class Stage extends Activity {
 
 
         controller.setOnTouchListener(new View.OnTouchListener() {
+
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
+
                 int[] loc = new int[2];
                 view.getLocationOnScreen(loc);
                 float touchX = motionEvent.getRawX();
@@ -46,7 +53,7 @@ public class Stage extends Activity {
                 loc[1] += view.getHeight()/2;
                 moveValue[0] = touchX - loc[0];
                 moveValue[1] = touchY - loc[1];
-                stageView.getControlInput((int)(moveValue[0]/10), (int)(moveValue[1]/10), weaponNo);
+                stageView.getControlInput((int)(moveValue[0]/10), (int)(moveValue[1]/10));
                 return true;
             }
         });
@@ -54,17 +61,16 @@ public class Stage extends Activity {
 
     void setLaser(View view) {
         Log.v("i", "Laser Shot");
-        weaponNo = 1;
+        stageView.changeFire(LASER_GUN);
     }
 
     void setShotgun(View view) {
         Log.v("i", "Shotgun shot");
-        weaponNo = 2;
+        stageView.changeFire(SHOT_GUN);
     }
 
     void setRocket(View view) {
         Log.v("i", "Rocket shot");
-        weaponNo = 3;
     }
 
 

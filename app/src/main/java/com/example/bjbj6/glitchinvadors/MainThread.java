@@ -50,10 +50,16 @@ public class MainThread extends Thread {
             try {
                 canvas = this.surfaceHolder.lockCanvas();
                 synchronized (surfaceHolder) {
+
+                    //프레임단위 작업
+                    if(frameCount%10 == 0) {
+                        this.stageView.fire();
+                    }
                     //update에는 게임을 바꾸는 메소드들이 들어감
                     this.stageView.update();
                     //draw는 화면에 그리는 것.
                     this.stageView.draw(canvas);
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();

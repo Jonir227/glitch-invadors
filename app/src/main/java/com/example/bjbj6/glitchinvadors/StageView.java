@@ -9,14 +9,24 @@ import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.WindowManager;
 
 public class StageView extends SurfaceView implements SurfaceHolder.Callback {
 
     private MainThread thread;
     private Player player;
     private Point playerPoint;
+    private int weaponUsing = 1;
+    private int frameCounter;
+
+
+
+    //laser shot
+    private Bullet[] laserShot = new Bullet[16];
+    private ShotgunBullet[] shotgunBullets = new ShotgunBullet[18];
 
 
 
@@ -28,8 +38,20 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         thread = new MainThread(getHolder(), this);
 
         //게임 변수 초기화
-        player = new Player(new Rect(100, 100, 300, 250), getContext());
-        playerPoint = new Point(150, 150);
+        player = new Player(new Rect(0, 0, 200, 150), getContext());
+        Point display = new Point();
+        ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRealSize(display);
+        playerPoint = new Point(display.x*2/3, display.y/2);
+
+        for(int i = 0; i < laserShot.length; i++) {
+            laserShot[i] = new Bullet(new Rect(0, 0, 50, 25), getContext());
+        }
+
+        int direction;
+        for(int i = 0; i < shotgunBullets.length; i++) {
+            direction = i % 3;
+            shotgunBullets[i] = new ShotgunBullet(new Rect(0, 0, 50, 25), getContext(), direction);
+        }
 
         setFocusable(true);
     }
@@ -58,33 +80,90 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     //-------------------------------------
 
     ///playerMovement
-    public void getControlInput(int x, int y, int weaponNo) {
+    public void getControlInput(int x, int y) {
         int targetX = playerPoint.x+ x;
         int targetY = playerPoint.y + y;
-        if(targetX < this.getWidth() && targetY < getHeight()) {
+        if(targetX < this.getWidth()-player.getRect().width()/2
+                && targetY < getHeight()-player.getRect().height()/2
+                && targetX - player.getRect().width()/2 > 0
+                && targetY - player.getRect().height()/2 > 0) {
             playerPoint.set(targetX, targetY);
         }
-        player.setWeapon(weaponNo);
     }
 
 
-
-
-    //플레이어 발사
-    // arraylist에 총알 객체를 하나 추가해서 active시킴
-    public void fire(long nanoTime) {
-        int[] shotData = player.getWeapon();
-
+    //playerWeaponChange
+    public void changeFire(int weaponNo) {
+        weaponUsing = weaponNo;
+        Log.v("i", weaponUsing+" is activated!");
     }
 
 
+    // 총알 관련 메소드
+    // 총알 배열에 총알 객체를 하나 active시킴
+    public void fire() {
+        frameCounter++;
+        switch (weaponUsing) {
+            case 1:
+                shot(laserShot);
+                break;
+            case 2:
+                shot(shotgunBullets);
+                break;
+        }
+    }
 
 
+    private void shot(Bullet[] bullet) {
+        if(bullet[0].getShotSpeed() == frameCounter) {
+            for(int i = 0; i < bullet.length; i++) {
+                if(!bullet[i].getIsFired()) {
+                    bullet[i].fire(playerPoint);
+                    frameCounter = 0;
+                    return;
+                }
+            }
+            Log.v("i", "bullet array is too small!");
+        }
+    }
+    private void shot(ShotgunBullet[] shotgunBullets) {
+        if(shotgunBullets[0].getShotSpeed() == frameCounter) {
+            for(int i = 0; i < shotgunBullets.length; i+=3) {
+                if(!shotgunBullets[i].getIsFired()) {
+                    // TODO: 수정할 것. false된 것을 기준으로 3칸씩 다시 active하고 있음.
+                    shotgunBullets[i].fire(playerPoint);
+                    shotgunBullets[i+1].fire(playerPoint);
+                    shotgunBullets[i+2].fire(playerPoint);
+                    frameCounter = 0;
+                    return;
+                }
+
+            }
+            Log.v("i", "bullet array is too small!");
+        }
+    }
+
+    private void updateBullets(Bullet[] bullets) {
+        for(int i = 0; i < bullets.length; i++) {
+            if(bullets[i].getIsFired()){
+                bullets[i].update(this);
+            }
+        }
+    }
+
+    private void drawBullets(Bullet[] bullets, Canvas canvas) {
+        for(int i = 0; i < bullets.length; i++) {
+            if(bullets[i].getIsFired()){
+                bullets[i].draw(canvas);
+            }
+        }
+    }
 
 
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
     }
 
     @Override
@@ -112,13 +191,18 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     //Logical Update
     public void update() {
         player.update(playerPoint);
+        updateBullets(laserShot);
+        updateBullets(shotgunBullets);
     }
-
 
     //View Update
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
+
+        drawBullets(laserShot, canvas);
+        drawBullets(shotgunBullets, canvas);
+
         player.draw(canvas);
     }
 }
