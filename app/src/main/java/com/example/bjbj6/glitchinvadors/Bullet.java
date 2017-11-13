@@ -70,7 +70,6 @@ public class Bullet extends GameObject{
                 && y - rect.height()/2 > 0) {
             return false;
         }
-        Log.v("i", x+"---"+y);
         return true;
     }
 

@@ -22,12 +22,16 @@ public class ShotgunBullet extends Bullet{
     private int direction = 0;
     private int bulletSpeed = 30;
 
-    public ShotgunBullet(Rect rect, Context context, int direction) {
+    public ShotgunBullet(Rect rect, Context context) {
         super(rect, context);
         this.direction = direction;
         this.damage = context.getResources().getInteger(R.integer.shotgunShotDmg);
         this.shotSpeed = context.getResources().getInteger(R.integer.shotgunShotSpd);
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.shotgun_bullet);
+    }
+
+    public void setDirection(int direction) {
+        this.direction = direction;
     }
 
 
@@ -45,10 +49,8 @@ public class ShotgunBullet extends Bullet{
                 move(bulletPoint);
                 break;
         }
-        Log.v("i", direction+"");
         if(isOutOfScreen(bulletPoint.x, bulletPoint.y, view)) {
             isFired = false;
-            Log.v("i", direction+"");
         }
     }
 

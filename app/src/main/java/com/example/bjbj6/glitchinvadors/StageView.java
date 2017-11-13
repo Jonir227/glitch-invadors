@@ -47,10 +47,9 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
             laserShot[i] = new Bullet(new Rect(0, 0, 50, 25), getContext());
         }
 
-        int direction;
+
         for(int i = 0; i < shotgunBullets.length; i++) {
-            direction = i % 3;
-            shotgunBullets[i] = new ShotgunBullet(new Rect(0, 0, 50, 25), getContext(), direction);
+            shotgunBullets[i] = new ShotgunBullet(new Rect(0, 0, 50, 25), getContext());
         }
 
         setFocusable(true);
@@ -128,14 +127,16 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     }
     private void shot(ShotgunBullet[] shotgunBullets) {
         if(shotgunBullets[0].getShotSpeed() == frameCounter) {
-            for(int i = 0; i < shotgunBullets.length; i+=3) {
+            int fireCount = 0;
+            for(int i = 0; i < shotgunBullets.length; i++) {
                 if(!shotgunBullets[i].getIsFired()) {
-                    // TODO: 수정할 것. false된 것을 기준으로 3칸씩 다시 active하고 있음.
+                    shotgunBullets[i].setDirection(fireCount);
                     shotgunBullets[i].fire(playerPoint);
-                    shotgunBullets[i+1].fire(playerPoint);
-                    shotgunBullets[i+2].fire(playerPoint);
-                    frameCounter = 0;
-                    return;
+                    fireCount++;
+                    if(fireCount == 3) {
+                        frameCounter = 0;
+                        return;
+                    }
                 }
 
             }

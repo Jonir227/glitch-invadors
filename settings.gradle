@@ -1,1 +1,1 @@
-include ':app', ':jbox2d-library-2.2.1.1'
+include ':app'
