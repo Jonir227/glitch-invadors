@@ -10,5 +10,5 @@
     <integer name="rocketShotDmg">5</integer>
 
     <!-- 적 데이터 -->
-
+    <integer name="gunshipHealth">5</integer>
 </resources>

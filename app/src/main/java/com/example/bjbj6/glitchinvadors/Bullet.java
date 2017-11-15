@@ -8,6 +8,8 @@ import android.graphics.Rect;
 import android.util.Log;
 import android.view.View;
 
+import java.util.LinkedList;
+
 /**
  *
  * Created by bjbj6 on 2017-10-12.
@@ -37,10 +39,6 @@ public class Bullet extends GameObject{
         return isFired;
     }
 
-    public int getDamage() {
-       return damage;
-    }
-
     int getShotSpeed() {
         return shotSpeed;
     }
@@ -49,6 +47,17 @@ public class Bullet extends GameObject{
     void fire(Point playerPoint) {
         isFired = true;
         bulletPoint.set(playerPoint.x, playerPoint.y);
+    }
+
+    void dealDamage(LinkedList<Enemy> enemies) {
+        for(int i = 0; i < enemies.size(); i++) {
+            if(Rect.intersects(this.rect, enemies.get(i).getRect())){
+                this.isFired = false;
+                if(enemies.get(i).damageDealt(this.damage)) {
+                    enemies.remove(i);
+                }
+            }
+        }
     }
 
 
@@ -64,13 +73,10 @@ public class Bullet extends GameObject{
     }
 
     protected boolean isOutOfScreen(int x, int y, View view) {
-        if(x < view.getWidth()-rect.width()/2
-                && y < view.getHeight()- rect.height()/2
-                && x - rect.width()/2 > 0
-                && y - rect.height()/2 > 0) {
-            return false;
-        }
-        return true;
+        return !(x < view.getWidth() - rect.width() / 2
+                && y < view.getHeight() - rect.height() / 2
+                && x - rect.width() / 2 > 0
+                && y - rect.height() / 2 > 0);
     }
 
     @Override

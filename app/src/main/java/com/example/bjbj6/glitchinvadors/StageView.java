@@ -12,7 +12,10 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
+
+import java.util.LinkedList;
 
 public class StageView extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -20,18 +23,27 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     private Player player;
     private Point playerPoint;
     private int weaponUsing = 1;
-    private int frameCounter;
+    private int shotCounter = 0;
 
-
+    private int totalFrame = 0;
 
     //laser shot
     private Bullet[] laserShot = new Bullet[16];
     private ShotgunBullet[] shotgunBullets = new ShotgunBullet[18];
 
+    //적들
+    private EnemySpawner enemySpawner;
+
+    private LinkedList<Enemy> enemyLinkedList = new LinkedList<>();
+
+    private Enemy enemy[] = new Enemy[1];
+    private Rect gunshipRect = new Rect(0, 0, 200, 150);
+
 
 
     ////초기화 블럭
     public void init() {
+
         getHolder().addCallback(this);
 
         //MainThread 호출
@@ -43,6 +55,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRealSize(display);
         playerPoint = new Point(display.x*2/3, display.y/2);
 
+        //bullet 초기화
         for(int i = 0; i < laserShot.length; i++) {
             laserShot[i] = new Bullet(new Rect(0, 0, 50, 25), getContext());
         }
@@ -51,6 +64,10 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         for(int i = 0; i < shotgunBullets.length; i++) {
             shotgunBullets[i] = new ShotgunBullet(new Rect(0, 0, 50, 25), getContext());
         }
+
+
+        //Enemy 초기화
+        enemySpawner = new EnemySpawner(getContext());
 
         setFocusable(true);
     }
@@ -69,6 +86,46 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     public StageView(Context context, AttributeSet attrs, int defstyle) {
         super(context, attrs, defstyle);
         init();
+    }
+
+
+    //Logical Update
+    public void update() {
+
+        totalFrame++;
+        player.update(playerPoint);
+
+        fire();
+        spawnFrameCheck(frameDivByTen());
+
+        updateBullets(laserShot);
+        updateBullets(shotgunBullets);
+
+        updateEnemy(enemyLinkedList);
+    }
+
+    //View Update
+    @Override
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
+
+        drawBullets(laserShot, canvas);
+        drawBullets(shotgunBullets, canvas);
+
+        drawEnemy(enemyLinkedList, canvas);
+
+        player.draw(canvas);
+    }
+
+
+
+    // ---------------------------------
+    //            프레임 계산
+    // ---------------------------------
+
+    private int frameDivByTen() {
+        Log.v("f", totalFrame+"");
+        return totalFrame/10;
     }
 
 
@@ -98,27 +155,35 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
-    // 총알 관련 메소드
+    //--------------------------
+    //
+    //        총알 관련 메소드
+    //
+    //--------------------------
+
+
     // 총알 배열에 총알 객체를 하나 active시킴
     public void fire() {
-        frameCounter++;
-        switch (weaponUsing) {
-            case 1:
-                shot(laserShot);
-                break;
-            case 2:
-                shot(shotgunBullets);
-                break;
+        if(totalFrame%10 == 0) {
+            shotCounter++;
+            switch (weaponUsing) {
+                case 1:
+                    shot(laserShot);
+                    break;
+                case 2:
+                    shot(shotgunBullets);
+                    break;
+            }
         }
     }
 
-
+    //모든 불렛 배열을 돌면서 발사 상태가 아닌 것을 발사 상태로 만들고 종료
     private void shot(Bullet[] bullet) {
-        if(bullet[0].getShotSpeed() == frameCounter) {
+        if(shotCounter == bullet[0].getShotSpeed()) {
             for(int i = 0; i < bullet.length; i++) {
                 if(!bullet[i].getIsFired()) {
                     bullet[i].fire(playerPoint);
-                    frameCounter = 0;
+                    shotCounter = 0;
                     return;
                 }
             }
@@ -126,7 +191,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
     private void shot(ShotgunBullet[] shotgunBullets) {
-        if(shotgunBullets[0].getShotSpeed() == frameCounter) {
+        if(shotCounter == shotgunBullets[0].getShotSpeed()) {
             int fireCount = 0;
             for(int i = 0; i < shotgunBullets.length; i++) {
                 if(!shotgunBullets[i].getIsFired()) {
@@ -134,7 +199,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
                     shotgunBullets[i].fire(playerPoint);
                     fireCount++;
                     if(fireCount == 3) {
-                        frameCounter = 0;
+                        shotCounter = 0;
                         return;
                     }
                 }
@@ -148,6 +213,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         for(int i = 0; i < bullets.length; i++) {
             if(bullets[i].getIsFired()){
                 bullets[i].update(this);
+                bullets[i].dealDamage(enemyLinkedList);
             }
         }
     }
@@ -160,6 +226,47 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    // --------------------------------
+    //
+    //
+    //          적 스폰관련 메소드
+    //
+    //
+    // --------------------------------
+
+    //CSV파일을 읽어서 10프레임 단위로 체크.
+    //적을 특정 위치에 스폰시킨다.
+    public void spawnFrameCheck(int frameDivByTen) {
+        switch (enemySpawner.spawnCheck(frameDivByTen)) {
+            case EnemySpawner.GUN_SHIP:
+                Rect tmp = new Rect(gunshipRect);
+                enemyLinkedList.add(new Enemy(tmp, getContext(), enemySpawner.getSpawnLocation()));
+                Log.v("i", "spawned!" + enemyLinkedList.size() + "!");
+                break;
+            case EnemySpawner.SPAWN_END:
+                Log.v("i", "spawn end!");
+                break;
+            case EnemySpawner.CSV_INPUT_ERROR:
+                Log.v("i", "error!");
+                break;
+            case EnemySpawner.NO_SPAWN:
+                break;
+        }
+    }
+
+    public void updateEnemy(LinkedList<Enemy> enemies) {
+        for(Enemy enemy : enemies) {
+            if(enemy.update(this)) {
+                enemies.remove(enemy);
+            }
+        }
+    }
+
+    public void drawEnemy(LinkedList<Enemy> enemies, Canvas canvas) {
+        for(Enemy enemy : enemies) {
+            enemy.draw(canvas);
+        }
+    }
 
 
     @Override
@@ -189,21 +296,5 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    //Logical Update
-    public void update() {
-        player.update(playerPoint);
-        updateBullets(laserShot);
-        updateBullets(shotgunBullets);
-    }
 
-    //View Update
-    @Override
-    public void draw(Canvas canvas) {
-        super.draw(canvas);
-
-        drawBullets(laserShot, canvas);
-        drawBullets(shotgunBullets, canvas);
-
-        player.draw(canvas);
-    }
 }
