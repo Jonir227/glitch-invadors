@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  *
@@ -49,12 +50,12 @@ public class Bullet extends GameObject{
         bulletPoint.set(playerPoint.x, playerPoint.y);
     }
 
-    void dealDamage(LinkedList<Enemy> enemies) {
-        for(int i = 0; i < enemies.size(); i++) {
-            if(Rect.intersects(this.rect, enemies.get(i).getRect())){
+    void dealDamage(ConcurrentLinkedQueue<Enemy> enemies) {
+        for(Enemy enemy : enemies) {
+            if(Rect.intersects(this.rect, enemy.getRect())){
                 this.isFired = false;
-                if(enemies.get(i).damageDealt(this.damage)) {
-                    enemies.remove(i);
+                if(enemy.damageDealt(this.damage)) {
+                    enemies.remove(enemy);
                 }
             }
         }

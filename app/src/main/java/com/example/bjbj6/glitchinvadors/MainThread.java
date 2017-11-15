@@ -48,7 +48,7 @@ public class MainThread extends Thread {
             canvas = null;
 
             try {
-                canvas = this.surfaceHolder.lockCanvas();
+                canvas = this.surfaceHolder.getSurface().lockHardwareCanvas();
                 synchronized (surfaceHolder) {
 
                     //update에는 게임을 바꾸는 메소드들이 들어감
@@ -62,7 +62,7 @@ public class MainThread extends Thread {
             } finally {
                 if(canvas != null) {
                     try {
-                        surfaceHolder.unlockCanvasAndPost(canvas);
+                        surfaceHolder.getSurface().unlockCanvasAndPost(canvas);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

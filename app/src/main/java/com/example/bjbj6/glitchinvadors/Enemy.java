@@ -30,7 +30,7 @@ public class Enemy extends GameObject {
 
     public boolean damageDealt(int damage) {
         currentHealth -= damage;
-        if(currentHealth < 0) {
+        if(currentHealth <= 0) {
             onDestroy();
             return true;
         }

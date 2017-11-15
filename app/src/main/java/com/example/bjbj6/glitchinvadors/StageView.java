@@ -15,7 +15,9 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.WindowManager;
 
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class StageView extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -34,7 +36,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     //적들
     private EnemySpawner enemySpawner;
 
-    private LinkedList<Enemy> enemyLinkedList = new LinkedList<>();
+    private ConcurrentLinkedQueue<Enemy> enemyLinkedList = new ConcurrentLinkedQueue<>();
 
     private Enemy enemy[] = new Enemy[1];
     private Rect gunshipRect = new Rect(0, 0, 200, 150);
@@ -254,7 +256,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    public void updateEnemy(LinkedList<Enemy> enemies) {
+    public void updateEnemy(ConcurrentLinkedQueue<Enemy> enemies) {
         for(Enemy enemy : enemies) {
             if(enemy.update(this)) {
                 enemies.remove(enemy);
@@ -262,7 +264,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    public void drawEnemy(LinkedList<Enemy> enemies, Canvas canvas) {
+    public void drawEnemy(ConcurrentLinkedQueue<Enemy> enemies, Canvas canvas) {
         for(Enemy enemy : enemies) {
             enemy.draw(canvas);
         }
