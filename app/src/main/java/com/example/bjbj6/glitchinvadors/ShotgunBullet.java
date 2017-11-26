@@ -20,10 +20,11 @@ public class ShotgunBullet extends Bullet{
 
 
     private int direction = 0;
-    private int bulletSpeed = 30;
+
 
     public ShotgunBullet(Rect rect, Context context) {
         super(rect, context);
+        bulletSpeed = 30;
         this.direction = direction;
         this.damage = context.getResources().getInteger(R.integer.shotgunShotDmg);
         this.shotSpeed = context.getResources().getInteger(R.integer.shotgunShotSpd);

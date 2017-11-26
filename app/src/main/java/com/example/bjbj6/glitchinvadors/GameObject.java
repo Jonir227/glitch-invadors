@@ -36,7 +36,7 @@ public abstract class GameObject {
     }
 
     public boolean hitCheck(GameObject gameObject) {
-        return rect.intersect(gameObject.getRect());
+        return Rect.intersects(rect, gameObject.getRect());
     }
     public void move(Point point) {
         rect.set(point.x -rect.width()/2, point.y - rect.height()/2, point.x + rect.width()/2, point.y + rect.height()/2);

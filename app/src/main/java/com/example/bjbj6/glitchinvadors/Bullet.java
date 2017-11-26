@@ -52,7 +52,7 @@ public class Bullet extends GameObject{
 
     void dealDamage(ConcurrentLinkedQueue<Enemy> enemies) {
         for(Enemy enemy : enemies) {
-            if(Rect.intersects(this.rect, enemy.getRect())){
+            if(hitCheck(enemy)){
                 this.isFired = false;
                 if(enemy.damageDealt(this.damage)) {
                     enemies.remove(enemy);

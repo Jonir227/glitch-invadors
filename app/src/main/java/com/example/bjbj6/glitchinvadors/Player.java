@@ -34,14 +34,6 @@ public class Player extends GameObject {
         currentHealth -= damage;
     }
 
-    public void hitboxCheck(Rect hitRect, int damage) {
-        if(rect.intersect(hitRect)) {
-            this.getDamage(damage);
-        }
-    }
-
-
-
 
     //로드, 로직
 

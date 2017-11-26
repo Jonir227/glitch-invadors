@@ -12,11 +12,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.view.WindowManager;
-
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class StageView extends SurfaceView implements SurfaceHolder.Callback {
@@ -26,7 +22,6 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     private Point playerPoint;
     private int weaponUsing = 1;
     private int shotCounter = 0;
-
     private int totalFrame = 0;
 
     //laser shot
@@ -38,7 +33,6 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
 
     private ConcurrentLinkedQueue<Enemy> enemyLinkedList = new ConcurrentLinkedQueue<>();
 
-    private Enemy enemy[] = new Enemy[1];
     private Rect gunshipRect = new Rect(0, 0, 200, 150);
 
 
@@ -98,7 +92,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         player.update(playerPoint);
 
         fire();
-        spawnFrameCheck(frameDivByTen());
+        spawnFrameCheck(totalFrame);
 
         updateBullets(laserShot);
         updateBullets(shotgunBullets);
@@ -126,7 +120,6 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     // ---------------------------------
 
     private int frameDivByTen() {
-        Log.v("f", totalFrame+"");
         return totalFrame/10;
     }
 
@@ -238,12 +231,14 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
 
     //CSV파일을 읽어서 10프레임 단위로 체크.
     //적을 특정 위치에 스폰시킨다.
-    public void spawnFrameCheck(int frameDivByTen) {
-        switch (enemySpawner.spawnCheck(frameDivByTen)) {
+    public void spawnFrameCheck(int totalFrame) {
+        if(totalFrame%10 != 0)
+            return;
+        switch (enemySpawner.spawnCheck(frameDivByTen())) {
             case EnemySpawner.GUN_SHIP:
                 Rect tmp = new Rect(gunshipRect);
                 enemyLinkedList.add(new Enemy(tmp, getContext(), enemySpawner.getSpawnLocation()));
-                Log.v("i", "spawned!" + enemyLinkedList.size() + "!");
+                Log.v("i", "spawned!");
                 break;
             case EnemySpawner.SPAWN_END:
                 Log.v("i", "spawn end!");
