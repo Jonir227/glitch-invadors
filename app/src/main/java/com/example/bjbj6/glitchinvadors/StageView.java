@@ -4,6 +4,7 @@ package com.example.bjbj6.glitchinvadors;
  * Created by bjbj6 on 2017-10-03.
  */
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Point;
@@ -34,6 +35,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     private ConcurrentLinkedQueue<Enemy> enemyLinkedList = new ConcurrentLinkedQueue<>();
 
     private Rect gunshipRect = new Rect(0, 0, 200, 150);
+    private Rect armedRect = new Rect(0, 0, 200, 300);
 
 
 
@@ -46,7 +48,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         thread = new MainThread(getHolder(), this);
 
         //게임 변수 초기화
-        player = new Player(new Rect(0, 0, 200, 150), getContext());
+        player = new Player(new Rect(0, 0, 200, 150), getContext(), this);
         Point display = new Point();
         ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRealSize(display);
         playerPoint = new Point(display.x*2/3, display.y/2);
@@ -60,7 +62,6 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         for(int i = 0; i < shotgunBullets.length; i++) {
             shotgunBullets[i] = new ShotgunBullet(new Rect(0, 0, 50, 25), getContext());
         }
-
 
         //Enemy 초기화
         enemySpawner = new EnemySpawner(getContext());
@@ -151,7 +152,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
 
 
     //--------------------------
-    //
+
     //        총알 관련 메소드
     //
     //--------------------------
@@ -234,11 +235,15 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     public void spawnFrameCheck(int totalFrame) {
         if(totalFrame%10 != 0)
             return;
+        Rect tmp;
         switch (enemySpawner.spawnCheck(frameDivByTen())) {
             case EnemySpawner.GUN_SHIP:
-                Rect tmp = new Rect(gunshipRect);
+                tmp = new Rect(gunshipRect);
                 enemyLinkedList.add(new Enemy(tmp, getContext(), enemySpawner.getSpawnLocation()));
-                Log.v("i", "spawned!");
+                break;
+            case EnemySpawner.ARMED_SHIP:
+                tmp = new Rect(armedRect);
+                enemyLinkedList.add(new EnemyArmed(tmp, getContext(), enemySpawner.getSpawnLocation()));
                 break;
             case EnemySpawner.SPAWN_END:
                 Log.v("i", "spawn end!");
@@ -253,7 +258,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void updateEnemy(ConcurrentLinkedQueue<Enemy> enemies) {
         for(Enemy enemy : enemies) {
-            if(enemy.update(this)) {
+            if(enemy.update(this, player)) {
                 enemies.remove(enemy);
             }
         }
@@ -293,5 +298,16 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    public void gameEnd() {
+        thread.setRunning(false);
+        try {
+            thread.interrupt();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Log.v("i", "game end!");
+        Activity activity = (Activity)getContext();
+        activity.finish();
+    }
 
 }

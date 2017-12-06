@@ -20,6 +20,7 @@ public class EnemySpawner {
     public static final int NO_SPAWN = -2;
     public static final int CSV_INPUT_ERROR = -1;
     public static final int GUN_SHIP = 0;
+    public static final int ARMED_SHIP = 1;
 
 
     private BufferedReader reader;
@@ -64,6 +65,8 @@ public class EnemySpawner {
             switch (spawnDataInput) {
                 case 0:
                     return GUN_SHIP;
+                case 1:
+                    return ARMED_SHIP;
                 default:
                     return CSV_INPUT_ERROR;
             }

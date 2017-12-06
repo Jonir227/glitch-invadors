@@ -11,4 +11,7 @@
 
     <!-- 적 데이터 -->
     <integer name="gunshipHealth">3</integer>
+    <integer name="gutshipDamage">1</integer>
+    <integer name="armedHealth">4</integer>
+    <integer name="armedDamage">1</integer>
 </resources>

@@ -4,6 +4,7 @@ package com.example.bjbj6.glitchinvadors;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -57,6 +58,18 @@ public class Stage extends Activity {
                 return true;
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        MainActivity.toast.cancel();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        startActivity(new Intent(this, MainActivity.class));
     }
 
     void setLaser(View view) {
