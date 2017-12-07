@@ -13,10 +13,8 @@ import android.view.View;
 
 public class EnemyArmed extends Enemy {
 
-    private int damage;
-
-    private EnemyLaserBullet[] enemyLaserBullets = new EnemyLaserBullet[10];
-    private int shotcounter = 0;
+    EnemyLaserBullet[] enemyLaserBullets = new EnemyLaserBullet[10];
+    int shotcounter = 0;
 
     EnemyArmed(Rect rect, Context gameContext, Point position) {
         super(rect, gameContext, position);

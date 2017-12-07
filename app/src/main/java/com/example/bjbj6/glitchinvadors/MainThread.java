@@ -35,8 +35,6 @@ public class MainThread extends Thread {
         long totalTime = 0;
         long targetTime = 1000/MAX_FPS;
 
-
-
         //30프레임을 유지하면서 기기 부하를 줄임.
         //프레임당 한번 update가 유지
         //그 이상 되면 기다림

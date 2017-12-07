@@ -30,6 +30,7 @@ public class Stage extends Activity {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stage);
 
@@ -39,7 +40,6 @@ public class Stage extends Activity {
         laserBtn = findViewById(R.id.imageView5);
         shotgunBtn = findViewById(R.id.imageView2);
         rocketBtn = findViewById(R.id.imageView3);
-
 
         controller.setOnTouchListener(new View.OnTouchListener() {
 
@@ -85,7 +85,5 @@ public class Stage extends Activity {
     void setRocket(View view) {
         Log.v("i", "Rocket shot");
     }
-
-
 
 }

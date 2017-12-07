@@ -7,6 +7,8 @@ package com.example.bjbj6.glitchinvadors;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.AttributeSet;
@@ -25,6 +27,12 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     private int shotCounter = 0;
     private int totalFrame = 0;
 
+    //UI
+    private String playerhealthText = "Health : ";
+    private int playerhealth = 0;
+    private Paint textPaint = new Paint();
+    private Point textLoc;
+
     //laser shot
     private Bullet[] laserShot = new Bullet[16];
     private ShotgunBullet[] shotgunBullets = new ShotgunBullet[18];
@@ -36,7 +44,11 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
 
     private Rect gunshipRect = new Rect(0, 0, 200, 150);
     private Rect armedRect = new Rect(0, 0, 200, 300);
+    private Rect glitchRect = new Rect(0, 0, 75, 75);
+    private Rect bossRect = new Rect(0,0,350,350);
 
+    //Items
+    private ConcurrentLinkedQueue<Pickable> pickables = new ConcurrentLinkedQueue<>();
 
 
     ////초기화 블럭
@@ -48,10 +60,22 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         thread = new MainThread(getHolder(), this);
 
         //게임 변수 초기화
+
+        textPaint.setAntiAlias(true);
+        textPaint.setColor(Color.rgb(255,255,255));
+
+
+
+
         player = new Player(new Rect(0, 0, 200, 150), getContext(), this);
         Point display = new Point();
         ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRealSize(display);
         playerPoint = new Point(display.x*2/3, display.y/2);
+        playerhealth = player.getCurrentHealth();
+        textLoc = new Point(display.x /20, display.y /12);
+        textPaint.setTextSize(50);
+
+
 
         //bullet 초기화
         for(int i = 0; i < laserShot.length; i++) {
@@ -92,6 +116,8 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         totalFrame++;
         player.update(playerPoint);
 
+        playerhealth = player.getCurrentHealth();
+
         fire();
         spawnFrameCheck(totalFrame);
 
@@ -99,6 +125,8 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         updateBullets(shotgunBullets);
 
         updateEnemy(enemyLinkedList);
+
+        updatePickable(pickables);
     }
 
     //View Update
@@ -106,15 +134,17 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     public void draw(Canvas canvas) {
         super.draw(canvas);
 
+        canvas.drawText(playerhealthText+playerhealth, textLoc.x, textLoc.y, textPaint);
+
         drawBullets(laserShot, canvas);
         drawBullets(shotgunBullets, canvas);
 
         drawEnemy(enemyLinkedList, canvas);
 
+        drawPickable(pickables, canvas);
+
         player.draw(canvas);
     }
-
-
 
     // ---------------------------------
     //            프레임 계산
@@ -123,7 +153,6 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
     private int frameDivByTen() {
         return totalFrame/10;
     }
-
 
     //-------------------------------------
     //|
@@ -142,7 +171,6 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
             playerPoint.set(targetX, targetY);
         }
     }
-
 
     //playerWeaponChange
     public void changeFire(int weaponNo) {
@@ -186,6 +214,7 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
             Log.v("i", "bullet array is too small!");
         }
     }
+
     private void shot(ShotgunBullet[] shotgunBullets) {
         if(shotCounter == shotgunBullets[0].getShotSpeed()) {
             int fireCount = 0;
@@ -199,7 +228,6 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
                         return;
                     }
                 }
-
             }
             Log.v("i", "bullet array is too small!");
         }
@@ -224,19 +252,21 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
 
     // --------------------------------
     //
-    //
     //          적 스폰관련 메소드
-    //
     //
     // --------------------------------
 
+
     //CSV파일을 읽어서 10프레임 단위로 체크.
     //적을 특정 위치에 스폰시킨다.
+
     public void spawnFrameCheck(int totalFrame) {
+        Log.v("i", frameDivByTen()+"--"+totalFrame);
         if(totalFrame%10 != 0)
             return;
         Rect tmp;
         switch (enemySpawner.spawnCheck(frameDivByTen())) {
+
             case EnemySpawner.GUN_SHIP:
                 tmp = new Rect(gunshipRect);
                 enemyLinkedList.add(new Enemy(tmp, getContext(), enemySpawner.getSpawnLocation()));
@@ -245,6 +275,13 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
                 tmp = new Rect(armedRect);
                 enemyLinkedList.add(new EnemyArmed(tmp, getContext(), enemySpawner.getSpawnLocation()));
                 break;
+            case EnemySpawner.GLITCH:
+                tmp = new Rect(glitchRect);
+                enemyLinkedList.add(new EnemyGlitch(tmp, getContext(), enemySpawner.getSpawnLocation(), playerPoint));
+                break;
+            case EnemySpawner.BOSS:
+                tmp = new Rect(bossRect);
+                enemyLinkedList.add(new Boss(tmp, getContext(), enemySpawner.getSpawnLocation(), playerPoint));
             case EnemySpawner.SPAWN_END:
                 Log.v("i", "spawn end!");
                 break;
@@ -254,6 +291,10 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
             case EnemySpawner.NO_SPAWN:
                 break;
         }
+    }
+
+    public void addEnemy(Enemy enemy) {
+        enemyLinkedList.add(enemy);
     }
 
     public void updateEnemy(ConcurrentLinkedQueue<Enemy> enemies) {
@@ -270,10 +311,46 @@ public class StageView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    //Pickable Method
+
+    public void spawnPickable(int id, Point point) {
+        switch (id) {
+            case 1:
+                GlitchBlock block = new GlitchBlock(new Rect(0,0,40,40), getContext() , point);
+                pickables.add(block);
+                break;
+            case 2:
+                ReapairItem item = new ReapairItem(new Rect(0, 0, 40,40), getContext(), point);
+                pickables.add(item);
+                break;
+            case 3:
+                Vaccine vaccine = new Vaccine(new Rect(0,0,40,40), getContext(), point);
+                pickables.add(vaccine);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public void updatePickable(ConcurrentLinkedQueue<Pickable> pickables) {
+        for(Pickable pickable : pickables) {
+            if(pickable.update(player, this)) {
+                pickables.remove(pickable);
+            }
+        }
+    }
+
+    public void drawPickable(ConcurrentLinkedQueue<Pickable> pickables, Canvas canvas) {
+        for(Pickable pickable : pickables) {
+            pickable.draw(canvas);
+        }
+    }
+
+
+    //서피스 관련 메소드
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
     }
 
     @Override

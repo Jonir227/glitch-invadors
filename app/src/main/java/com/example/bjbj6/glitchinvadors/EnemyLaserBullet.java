@@ -25,7 +25,6 @@ public class EnemyLaserBullet extends GameObject {
         bulletPoint = new Point();
     }
 
-
     void fire(Point point) {
         bulletPoint.set(point.x, point.y);
         isFired = true;
@@ -35,7 +34,6 @@ public class EnemyLaserBullet extends GameObject {
         return damage;
     }
 
-
     @Override
     void draw(Canvas canvas) {
         canvas.drawBitmap(bitmap, null, rect, null);
@@ -44,7 +42,6 @@ public class EnemyLaserBullet extends GameObject {
     @Override
     void update() {
     }
-
 
     void update(View view, Player player) {
         bulletPoint.set(bulletPoint.x + bulletSpeed, bulletPoint.y);

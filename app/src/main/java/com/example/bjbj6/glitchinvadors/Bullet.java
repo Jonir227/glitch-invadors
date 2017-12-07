@@ -73,13 +73,6 @@ public class Bullet extends GameObject{
         }
     }
 
-    protected boolean isOutOfScreen(int x, int y, View view) {
-        return !(x < view.getWidth() - rect.width() / 2
-                && y < view.getHeight() - rect.height() / 2
-                && x - rect.width() / 2 > 0
-                && y - rect.height() / 2 > 0);
-    }
-
     @Override
     public void draw(Canvas canvas) {
         canvas.drawBitmap(bitmap, null, rect, null);

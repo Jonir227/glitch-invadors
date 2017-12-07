@@ -21,6 +21,8 @@ public class EnemySpawner {
     public static final int CSV_INPUT_ERROR = -1;
     public static final int GUN_SHIP = 0;
     public static final int ARMED_SHIP = 1;
+    public static final int GLITCH = 2;
+    public static final int BOSS = 3;
 
 
     private BufferedReader reader;
@@ -60,6 +62,7 @@ public class EnemySpawner {
             return SPAWN_END;
         }
         int spawnDataInput = spawnData.peekFirst()[0];
+        Log.v("c", "SpanDataInput : " + spawnDataInput);
         if(frameCounter == spawnDataInput){
             spawnDataInput = spawnData.peekFirst()[1];
             switch (spawnDataInput) {
@@ -67,6 +70,10 @@ public class EnemySpawner {
                     return GUN_SHIP;
                 case 1:
                     return ARMED_SHIP;
+                case 2:
+                    return GLITCH;
+                case 3:
+                    return BOSS;
                 default:
                     return CSV_INPUT_ERROR;
             }

@@ -1,11 +1,11 @@
 package com.example.bjbj6.glitchinvadors;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -53,19 +53,10 @@ public class Enemy extends GameObject {
         return isOutOfScreen(position.x, position.y, view);
     }
 
-    private void checkPlayer(Player player) {
+    void checkPlayer(Player player) {
         if(player.hitCheck(this)) {
             player.damageDealt(damage);
         }
-    }
-
-
-
-    protected boolean isOutOfScreen(int x, int y, View view) {
-        return !(x < view.getWidth() - rect.width() / 2
-                && y < view.getHeight() - rect.height() / 2
-                && x - rect.width() / 2 > 0
-                && y - rect.height() / 2 > 0);
     }
 
     @Override
@@ -74,6 +65,8 @@ public class Enemy extends GameObject {
     }
     @Override
     void onDestroy() {
-
+        int val = (int)(Math.random()*10) % 4;
+        StageView stageView = (((Activity)gameContext).findViewById(R.id.stageView));
+        stageView.spawnPickable(val, this.position);
     }
 }
